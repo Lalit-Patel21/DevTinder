@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -16,10 +17,20 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("invalid emailId:" + value);
+        }
+      },
     },
     password: {
       type: String,
       require: true,
+      validate(value) {
+        if (!validator.isStrongPassword(value)) {
+          throw new Error("enter a strong password:" + value);
+        }
+      },
     },
     age: {
       type: Number,
@@ -29,13 +40,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       validate(value) {
         if (!["male", "female", "others"].includes(value)) {
-          throw new Error("gender data isnot valid  ");
+          throw new Error("gender data isnot valid");
         }
       },
     },
     photoUrl: {
       type: String,
-      default: "https ://jknsdfghiuvjh",
+      default:
+        "https://images.pexels.com/photos/3131634/pexels-photo-3131634.jpeg?cs=srgb&dl=pexels-johannes-plenio-3131634.jpg&fm=jpg",
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("invalid photpUrl:" + value);
+        }
+      },
     },
     about: {
       type: String,
