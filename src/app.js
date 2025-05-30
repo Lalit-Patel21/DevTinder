@@ -48,12 +48,14 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid credentials");
     }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
       //create a jwt token
-      const token = await jwt.sign({ _id: userId }, "DEVTInder@786", {
+      const token = await jwt.sign({ _id: user._id }, "DEVTinder@786", {
         expiresIn: "1d",
       });
+
       // add the token to cookie and send the response back to the user
       res.cookie("token", token, {
         expires: new Date(Date.now() + 8 * 3600000),
@@ -70,27 +72,11 @@ app.post("/login", async (req, res) => {
 app.get("/profile", userAuth, async (req, res) => {
   try {
     const user = req.user;
+
     res.send(user);
   } catch (err) {
     res.status(400).send("Error : " + err.message);
   }
-  // try {
-  //   const cookies = req.cookies;
-  //   const { token } = cookies;
-  //   if (!token) {
-  //     throw new Error("token is not valid");
-  //   }
-  //   const decodeMessage = await jwt.verify(token, "DEVTINDER&786");
-  //   const { _id } = decodeMessage;
-
-  //   const user = await User.findById(_id);
-  //   if (!user) {
-  //     throw new Error("user not found");
-  //   }
-  //   res.send(user);
-  // } catch (err) {
-  //   res.status(400).send("Error : " + err.message);
-  // }
 });
 
 app.get("/users", async (req, res) => {
@@ -165,33 +151,3 @@ connectDB()
   .catch((err) => {
     console.error("database connection canot be  eastablished...");
   });
-
-//   res.end("server is on");
-//console.log("");
-// app.use("/admin", (req, res) => {
-//   res.send("hello from the server admin");
-// });
-
-// app.use("/user", (req, res) => {
-//   res.send("hello from the server user");
-// });
-
-// app.use("/", (req, res) => {
-//   res.send("hello from the server");
-// });
-
-// app.post("/signup", async (req, res) => {
-// const user = new User({
-//   firstName: "lalit",
-//   lastName: "patel",
-//   emailId: "lalitpatel111.da@gmail.com",
-//   password: "Lalit@123",
-//   age: "25",
-// });
-// try {
-//   await user.save();
-//   res.send("user added successfully");
-// } catch (err) {
-//   res.status(400).send("error saving the user:" + err.message);
-// }
-// });
