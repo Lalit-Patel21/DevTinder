@@ -23,7 +23,6 @@ app.post("/signup", async (req, res) => {
     //encrypt the password
     const { firstName, lastName, emailId, password } = req.body;
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log(passwordHash);
     const user = new User({
       firstName,
       lastName,
@@ -49,13 +48,10 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid credentials");
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
     if (isPasswordValid) {
       //create a jwt token
-      const token = await jwt.sign({ _id: user._id }, "DEVTinder@786", {
-        expiresIn: "1d",
-      });
-
+      const token = await user.getJWT();
       // add the token to cookie and send the response back to the user
       res.cookie("token", token, {
         expires: new Date(Date.now() + 8 * 3600000),
