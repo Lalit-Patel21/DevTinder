@@ -1,31 +1,72 @@
 const express = require("express");
 const requestRouter = express.Router();
-//const User = require("../models/user");
-//const { validateSignUpData } = require("../utils/validation");
+const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/user");
 const { userAuth } = require("../middlewares/auth");
 
 requestRouter.post(
-  "/request/send/interested/:userId",
+  "/request/send/:status/:toUserId",
   userAuth,
   async (req, res) => {
     try {
-      res.send("user logegd in successfully");
+      const fromUserId = req.user._id;
+      const toUserId = req.params.toUserId;
+      const status = req.params.status;
+
+      const allowedStatus = ["ignored", "interested"];
+      if (!allowedStatus.includes(status)) {
+        return res
+          .status(400)
+          .json({ message: "invalid status type:" + status });
+      }
+      const toUser = await User.findById(toUserId);
+      if (!toUser) {
+        return res.status(400).send({ message: "User not found!!" });
+      }
+      const existingConnectionRequest = await ConnectionRequest.findOne({
+        $or: [
+          {
+            fromUserId,
+            toUserId,
+          },
+          {
+            fromUserId: toUserId,
+            toUserId: fromUserId,
+          },
+        ],
+      });
+      if (existingConnectionRequest) {
+        return res
+          .status(400)
+          .send({ message: "connection request already exists!!" });
+      }
+      const connectionRequest = new ConnectionRequest({
+        fromUserId,
+        toUserId,
+        status,
+      });
+      const data = await connectionRequest.save();
+      res.json({
+        message:
+          req.user.firstName + " is " + status + " in " + toUser.firstName,
+        data,
+      });
     } catch (err) {
       res.status(400).send("Error : " + err.message);
     }
   }
 );
-requestRouter.post(
-  "/request/send/ignored/:userId",
-  userAuth,
-  async (req, res) => {
-    try {
-      res.send("user logegd in successfully");
-    } catch (err) {
-      res.status(400).send("Error : " + err.message);
-    }
-  }
-);
+// requestRouter.post(
+//   "/request/send/ignored/:userId",
+//   userAuth,
+//   async (req, res) => {
+//     try {
+//       res.send("user logegd in successfully");
+//     } catch (err) {
+//       res.status(400).send("Error : " + err.message);
+//     }
+//   }
+// );
 requestRouter.post(
   "/request/review/accepeted/:requestId",
   userAuth,
