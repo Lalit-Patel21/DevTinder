@@ -68,26 +68,54 @@ requestRouter.post(
 //   }
 // );
 requestRouter.post(
-  "/request/review/accepeted/:requestId",
+  "/request/review/:status/:requestId",
   userAuth,
   async (req, res) => {
     try {
-      res.send("user logegd in successfully");
+      const loggedInUser = req.user;
+      const { status, requestId } = req.params;
+
+      const allowedStatus = ["accepted", "rejected"];
+      if (!allowedStatus.includes(status)) {
+        return res
+          .status(400)
+          .json({ message: "invalid status type:" + status });
+      }
+
+      // console.log(requestId, loggedInUser._id);
+      const connectionRequest = await ConnectionRequest.findOne({
+        fromUserId: requestId,
+        toUserId: loggedInUser._id,
+        status: "interested",
+      });
+      // console.log(connectionRequest);
+
+      if (!connectionRequest) {
+        return res
+          .status(404)
+          .send({ message: "connection request not found!" });
+      }
+      connectionRequest.status = status;
+      const data = await connectionRequest.save();
+      res.json({
+        message: "Connection Request " + status,
+        data,
+      });
     } catch (err) {
       res.status(400).send("Error : " + err.message);
     }
   }
 );
-requestRouter.post(
-  "/request/review/rejected/:requestId",
-  userAuth,
-  async (req, res) => {
-    try {
-      res.send("user logegd in successfully");
-    } catch (err) {
-      res.status(400).send("Error : " + err.message);
-    }
-  }
-);
+// requestRouter.post(
+//   "/request/review/rejected/:requestId",
+//   userAuth,
+//   async (req, res) => {
+//     try {
+//       res.send("user logegd in successfully");
+//     } catch (err) {
+//       res.status(400).send("Error : " + err.message);
+//     }
+//   }
+// );
 
 module.exports = requestRouter;
