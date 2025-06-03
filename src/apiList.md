@@ -28,4 +28,4 @@ GET /user/connections
 GET /user/requests/received
 GET /user/feed - gets you the profiles of other users on platform
 
-status : ignore, interested, accepeted, rejected
+status : ignored, interested, accepeted, rejected
