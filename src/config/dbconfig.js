@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
-// import dotenv from "dotenv";
-// dotenv.config();
+const dotenv = require("dotenv");
+
+dotenv.config();
+
+console.log(process.env.MONGO_URI);
 
 const connectDB = async () => {
-  await mongoose.connect(
-    "mongodb+srv://lalitpatel21:Lalit21@testingmongodb.zcpqw.mongodb.net/devTinder"
-  );
+  await mongoose.connect(process.env.MONGO_URI);
 };
 module.exports = connectDB;
 

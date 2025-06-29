@@ -23,5 +23,5 @@ connectDB()
     });
   })
   .catch((err) => {
-    console.error("database connection canot be  eastablished...");
+    console.error("database connection canot be  eastablished...", err);
   });
